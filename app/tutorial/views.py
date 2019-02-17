@@ -1,10 +1,17 @@
 import colander
 import deform.widget
+from pyramid.response import Response
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from .models import DBSession, Page
+
+# @view_config(route_name='search')
+# def search(request):
+#     print('Incoming request')
+#     return Response('<body>Hello</body>')
+
 
 
 class WikiPage(colander.MappingSchema):
@@ -18,6 +25,13 @@ class WikiPage(colander.MappingSchema):
 class WikiViews(object):
     def __init__(self, request):
         self.request = request
+
+
+    @view_config(route_name='search', renderer='search.pt')
+    def search(self):
+        print('Incoming request')
+        name = 'EugeneKalentev'
+        return dict(name=name)
 
     @property
     def wiki_form(self):
@@ -61,11 +75,11 @@ class WikiViews(object):
         return dict(form=form)
 
 
-    @view_config(route_name='wikipage_view', renderer='wikipage_view.pt')
-    def wikipage_view(self):
-        uid = int(self.request.matchdict['uid'])
-        page = DBSession.query(Page).filter_by(uid=uid).one()
-        return dict(page=page)
+    # @view_config(route_name='wikipage_view', renderer='wikipage_view.pt')
+    # def wikipage_view(self):
+    #     uid = int(self.request.matchdict['uid'])
+    #     page = DBSession.query(Page).filter_by(uid=uid).one()
+    #     return dict(page=page)
 
 
     @view_config(route_name='wikipage_edit',
