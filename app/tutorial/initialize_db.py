@@ -12,6 +12,8 @@ from pyramid.paster import (
 from .models import (
     DBSession,
     Page,
+    AllResults,
+    Search,
     Base,
     )
 
@@ -34,4 +36,8 @@ def main(argv=sys.argv):
     Base.metadata.create_all(engine)
     with transaction.manager:
         model = Page(title='Root', body='<p>Root</p>')
+        some_result = AllResults(title='Some title', name='Some name', link='Some link')
+        some_search = Search(title='Sample title', name='Sample name')
         DBSession.add(model)
+        DBSession.add(some_result)
+        DBSession.add(some_search)

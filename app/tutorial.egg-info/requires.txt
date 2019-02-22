@@ -5,6 +5,7 @@ pyramid_tm
 sqlalchemy
 waitress
 zope.sqlalchemy
+requests
 
 [dev]
 pyramid_debugtoolbar

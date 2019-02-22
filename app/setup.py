@@ -10,6 +10,7 @@ requires = [
     'sqlalchemy',
     'waitress',
     'zope.sqlalchemy',
+    'requests'
 ]
 
 # List of dependencies installed via `pip install -e ".[dev]"`

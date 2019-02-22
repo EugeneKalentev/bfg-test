@@ -5,12 +5,28 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from .models import DBSession, Page
+from .models import DBSession, Page, Search, AllResults
 
-# @view_config(route_name='search')
-# def search(request):
-#     print('Incoming request')
-#     return Response('<body>Hello</body>')
+import requests
+import json
+import datetime
+
+# import os
+# import logging
+# import sqlite3
+
+# from pyramid.events import ApplicationCreated
+# from pyramid.events import NewRequest
+# from pyramid.events import subscriber
+
+# def application_created_subscriber(event):
+#     log.warning('Initializing database...')
+#     with open(os.path.join(here, 'schema.sql')) as f:
+#         stmt = f.read()
+#         settings = event.app.registry.settings
+#         db = sqlite3.connect(settings['db'])
+#         db.executescript(stmt)
+#         db.commit()
 
 
 
@@ -26,12 +42,41 @@ class WikiViews(object):
     def __init__(self, request):
         self.request = request
 
+    @view_config(route_name='main', renderer='main.pt')
+    def main(self):
+        name = 'EugeneKalentev'
+        results = DBSession.query(AllResults).order_by(AllResults.id)
+        print(type(results))
+        # print(dir(results))
+        # print(results.AllResults_id)
+        return dict(results=results)
+
+
 
     @view_config(route_name='search', renderer='search.pt')
     def search(self):
         print('Incoming request')
         name = 'EugeneKalentev'
         return dict(name=name)
+
+    @view_config(route_name='result', renderer='result.pt')
+    def result(self):
+        print('Search result')
+        query = self.request.params['query']
+        print(query)
+        r = requests.get('http://api.stackexchange.com/2.2/search?', 
+            params = {'order' : 'desc', 'sort' : 'activity', 
+            'intitle' : query, 'site' : 'stackoverflow',
+            'pagesize' : 25})
+        print(len(r.json()['items']))
+        for i in range(len(r.json()['items'])):
+            title = r.json()['items'][i]['title']
+            body = query
+            DBSession.add(Search(title=title, body=body))
+        
+        result = DBSession.query(Search).filter_by(body=query).first()
+        
+        return dict(result=result)
 
     @property
     def wiki_form(self):
@@ -75,11 +120,11 @@ class WikiViews(object):
         return dict(form=form)
 
 
-    # @view_config(route_name='wikipage_view', renderer='wikipage_view.pt')
-    # def wikipage_view(self):
-    #     uid = int(self.request.matchdict['uid'])
-    #     page = DBSession.query(Page).filter_by(uid=uid).one()
-    #     return dict(page=page)
+    @view_config(route_name='wikipage_view', renderer='wikipage_view.pt')
+    def wikipage_view(self):
+        uid = int(self.request.matchdict['uid'])
+        page = DBSession.query(Page).filter_by(uid=uid).one()
+        return dict(page=page)
 
 
     @view_config(route_name='wikipage_edit',
