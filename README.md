@@ -1,36 +1,36 @@
-# bfg-test
+# Test task for [BFG Group](https://www.bfg-group.ru/)
+## Web application to search for Stack Overflow
 
-Test task for BFG companies. Web application to search for Stack Exchange
 
+1. **Set an environment variable**
 
-Set an environment variable
+- export VENV=~/bfg_test/env
 
-export VENV=~/bfg_test/env
+2. **Create a virtual environment**
 
-Create a virtual environment
+- python3 -m venv $VENV
 
-python3 -m venv $VENV
+3. **Update packaging tools in the virtual environment**
 
-Update packaging tools in the virtual environment
+- $VENV/bin/pip install --upgrade pip setuptools
 
-$VENV/bin/pip install --upgrade pip setuptools
+4. **Install Pyramid**
 
-Install Pyramid
+- $VENV/bin/pip install "pyramid==1.10.2" waitress
 
-$VENV/bin/pip install "pyramid==1.10.2" waitress
+5. **Change folder**
 
-Change folder
+- cd app
 
-cd app
+6. **Install**
 
-Install
+- $VENV/bin/pip install -e .
+- $VENV/bin/pip install -e ".[dev]"
 
-$VENV/bin/pip install -e .
-$VENV/bin/pip install -e ".[dev]"
+7. **Run this console script, thus producing our database and table**
 
-Run this console script, thus producing our database and table
-$VENV/bin/initialize_tutorial_db development.ini
+- $VENV/bin/initialize_tutorial_db development.ini
 
-Run the WSGI application with
+8. **Run the WSGI application with**
 
-$VENV/bin/pserve development.ini --reload
+- $VENV/bin/pserve development.ini --reload
