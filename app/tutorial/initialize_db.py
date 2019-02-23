@@ -34,10 +34,10 @@ def main(argv=sys.argv):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
-    with transaction.manager:
-        model = Page(title='Root', body='<p>Root</p>')
-        some_result = AllResults(title='Some title', name='Some name', link='Some link')
-        some_search = Search(title='Sample title', name='Sample name')
-        DBSession.add(model)
-        DBSession.add(some_result)
-        DBSession.add(some_search)
+    # with transaction.manager:
+    #     model = Page(title='Root', body='<p>Root</p>')
+    #     some_result = AllResults(title='Some title', name='Some name')
+    #     some_search = Search(title='Sample title', name='Sample name', label='Some label')
+    #     DBSession.add(model)
+    #     DBSession.add(some_result)
+    #     DBSession.add(some_search)

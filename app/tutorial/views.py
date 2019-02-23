@@ -10,7 +10,7 @@ from .models import DBSession, Page, Search, AllResults
 import requests
 import json
 import datetime
-
+import re
 # import os
 # import logging
 # import sqlite3
@@ -27,6 +27,10 @@ import datetime
 #         db = sqlite3.connect(settings['db'])
 #         db.executescript(stmt)
 #         db.commit()
+
+def prob_to_tchkzpt(s):
+    pattern = r'[^\w+]'
+    return re.sub(pattern, ';', str(s))
 
 
 
@@ -57,24 +61,51 @@ class WikiViews(object):
     def search(self):
         print('Incoming request')
         name = 'EugeneKalentev'
+
         return dict(name=name)
 
     @view_config(route_name='result', renderer='result.pt')
     def result(self):
+        try:
+            page = self.request.params['page']
+            if page and page.isdigit():
+                page = int(page)
+            else:
+                page = 1
+        except:
+            page = 1
+
         print('Search result')
+
+        
         query = self.request.params['query']
         print(query)
-        r = requests.get('http://api.stackexchange.com/2.2/search?', 
-            params = {'order' : 'desc', 'sort' : 'activity', 
-            'intitle' : query, 'site' : 'stackoverflow',
-            'pagesize' : 25})
-        print(len(r.json()['items']))
-        for i in range(len(r.json()['items'])):
-            title = r.json()['items'][i]['title']
-            body = query
-            DBSession.add(Search(title=title, body=body))
-        
-        result = DBSession.query(Search).filter_by(body=query).first()
+        if DBSession.query(AllResults).filter_by(title=str(query)).first():
+            result = DBSession.query(Search).filter_by(label=str(query)).all()
+            return dict(result=result)
+        else:
+            DBSession.add(AllResults(title=query, name=str(query)+'_vrewrgtrgtrgtrg'))
+
+            for p in range(1, 5):
+                r = requests.get('http://api.stackexchange.com/2.2/search?', 
+                params = {
+                'page' : p,
+                'order' : 'desc', 
+                'sort' : 'activity', 
+                'tagged' : prob_to_tchkzpt(query),
+                'site' : 'stackoverflow',
+                'pagesize' : 5
+                        }
+                )       
+                for i in range(len(r.json()['items'])):
+                    title = r.json()['items'][i]['title']
+                    name = r.json()['items'][i]['owner']['display_name']
+                    label = str(query)
+                    DBSession.add(Search(title=title, name=name, label=label))
+
+        result = DBSession.query(Search).filter_by(label=str(query)).all()
+
+        # print(result)
         
         return dict(result=result)
 
@@ -120,11 +151,11 @@ class WikiViews(object):
         return dict(form=form)
 
 
-    @view_config(route_name='wikipage_view', renderer='wikipage_view.pt')
-    def wikipage_view(self):
-        uid = int(self.request.matchdict['uid'])
-        page = DBSession.query(Page).filter_by(uid=uid).one()
-        return dict(page=page)
+    # @view_config(route_name='wikipage_view', renderer='wikipage_view.pt')
+    # def wikipage_view(self):
+    #     uid = int(self.request.matchdict['uid'])
+    #     page = DBSession.query(Page).filter_by(uid=uid).one()
+    #     return dict(page=page)
 
 
     @view_config(route_name='wikipage_edit',

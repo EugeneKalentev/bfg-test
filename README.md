@@ -28,6 +28,9 @@ Install
 $VENV/bin/pip install -e .
 $VENV/bin/pip install -e ".[dev]"
 
+Run this console script, thus producing our database and table
+$VENV/bin/initialize_tutorial_db development.ini
+
 Run the WSGI application with
 
 $VENV/bin/pserve development.ini --reload

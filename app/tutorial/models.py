@@ -1,7 +1,6 @@
 from pyramid.security import Allow, Everyone
-
+import re
 import datetime
-
 from sqlalchemy import (
     Column,
     Integer,
@@ -10,20 +9,20 @@ from sqlalchemy import (
     UnicodeText,
     DateTime,
     )
-
 from sqlalchemy.ext.declarative import declarative_base
-
 from sqlalchemy.orm import (
     scoped_session,
     sessionmaker,
     )
-
 from zope.sqlalchemy import ZopeTransactionExtension
+
+def slugify(s):
+    pattern = r'[^\w+]'
+    return re.sub(pattern, '-', str(s))
 
 DBSession = scoped_session(
     sessionmaker(extension=ZopeTransactionExtension()))
 Base = declarative_base()
-
 
 class Page(Base):
     __tablename__ = 'wikipages'
@@ -37,7 +36,18 @@ class AllResults(Base):
     dt = Column(DateTime, default=datetime.datetime.now)
     title = Column(UnicodeText)
     name = Column(UnicodeText)
-    link = Column(UnicodeText)
+    slug = Column(UnicodeText)
+
+    def __init__(self, *args, **kwargs):
+        super(AllResults, self).__init__(*args, **kwargs)
+        self.generate_slug()
+
+    def generate_slug(self):
+        if self.title:
+            self.slug = slugify(self.title)
+
+    def __repr__(self):
+        return '<AllResults id: {}, title: {}>'.format(self.id, self.title)
 
 class Search(Base):
     __tablename__ = 'search'
@@ -45,9 +55,7 @@ class Search(Base):
     dt = Column(DateTime, default=datetime.datetime.now)
     title = Column(UnicodeText)
     name = Column(UnicodeText)
-
-
-
+    label = Column(UnicodeText)
 
 class Root(object):
     __acl__ = [(Allow, Everyone, 'view'),
